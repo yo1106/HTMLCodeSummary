@@ -5,67 +5,74 @@ $len = isset($_POST['len']) ? $_POST['len'] : 7;
 $result = HTMLCodeSummary($str, $len);
 
 
-function HTMLCodeSummary($str='', $len=0){
-	$flag = true;
-	$tagFlag = false;
-	$unsetTagFlag = false;
-	$tag='';
-	$unsetTag='';
-	$tags = array();
-	$cnt = 1;
-	$result = '';
-
-	preg_match_all("/(.)/u", $str, $mat);
-	foreach($mat[0] as $key=>$value){
-		if($cnt>$len){
-			break;
-		}
-		$result.= $value;
-//		echo '['.$cnt.']'.$value.'<br>';
-
-		
-
-		if($value == '<' ){
-			if($mat[0][$key+1]=='/'){
-				$unsetTagFlag=true;
-			}else{
-				$tagFlag=true;
-//				echo 'tag';
-			}
-			$flag=false;
-		}
-		if($tagFlag){
-			if($value == ' '){
-				$tagFlag=false;
-				$tag.='>';
-				$tags[] = str_replace('<', '</', $tag);
-				$tag='';
-			}else{
-				$tag.= $value;
-			}
-		}
-		if($flag){
-			$cnt++;
-		}
-		if($unsetTagFlag){
-			$unsetTag.=$value;
-		}
-		if($value == '>'){
-			$unsetTagFlag=false;
-
-			$key = array_search($unsetTag, $tags);
-			unset($tags[$key]);
-			$unsetTag='';
-			$flag=true;
-		}
-	}
+	function HTMLCodeSummary($str='', $len=0, $tail=''){
+		$flag = true;
+		$tagFlag = false;
+		$unsetTagFlag = false;
+		$tag='';
+		$unsetTag='';
+		$tags = array();
+		$cnt = 1;
+		$result = '';
 	
-	while($popTag = array_pop($tags)){
-		$result.= $popTag;
+		preg_match_all("/(.)/u", $str, $mat);
+		foreach($mat[0] as $key=>$value){
+			if($cnt>$len){
+				$result.= $tail;
+				break;
+			}
+			$result.= $value;
+	//		echo '['.$cnt.']'.$value.'<br>';
+	
+			
+	
+			if($value == '<' ){
+				if($mat[0][$key+1]=='/'){
+					$unsetTagFlag=true;
+				}else{
+					$tagFlag=true;
+	//				echo 'tag';
+				}
+				$flag=false;
+			}
+			if($tagFlag){
+				if($value == ' '){
+					$tagFlag=false;
+					$tag.='>';
+					$tags[] = str_replace('<', '</', $tag);
+					$tag='';
+				}else{
+					$tag.= $value;
+				}
+			}
+			if($flag){
+				if(strlen($value)==1){
+					$cnt+=0.5;
+				}else{
+					$cnt++;
+				}
+			}
+			if($unsetTagFlag){
+				$unsetTag.=$value;
+			}
+			if($value == '>'){
+				$unsetTagFlag=false;
+	
+				$key = array_search($unsetTag, $tags);
+				unset($tags[$key]);
+				$unsetTag='';
+				$flag=true;
+			}
+		}
+		
+		while($popTag = array_pop($tags)){
+			$result.= $popTag;
+		}
+	
+		return $result;
 	}
 
-	return $result;
-}?>
+?>
 <!DOCTYPE html>
 <html lang="ja-JP" >
 	<head>
