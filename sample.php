@@ -9,6 +9,7 @@ $result = HTMLCodeSummary($str, $len);
 		$flag = true;
 		$tagFlag = false;
 		$unsetTagFlag = false;
+		$tailFlag = false;
 		$tag='';
 		$unsetTag='';
 		$tags = array();
@@ -18,7 +19,7 @@ $result = HTMLCodeSummary($str, $len);
 		preg_match_all("/(.)/u", $str, $mat);
 		foreach($mat[0] as $key=>$value){
 			if($cnt>$len){
-				$result.= $tail;
+				$tailFlag=true;
 				break;
 			}
 			$result.= $value;
@@ -36,7 +37,7 @@ $result = HTMLCodeSummary($str, $len);
 				$flag=false;
 			}
 			if($tagFlag){
-				if($value == ' '){
+				if($value == ' ' || $value == '>'){
 					$tagFlag=false;
 					$tag.='>';
 					$tags[] = str_replace('<', '</', $tag);
@@ -57,18 +58,19 @@ $result = HTMLCodeSummary($str, $len);
 			}
 			if($value == '>'){
 				$unsetTagFlag=false;
-	
 				$key = array_search($unsetTag, $tags);
 				unset($tags[$key]);
 				$unsetTag='';
 				$flag=true;
 			}
 		}
-		
+
 		while($popTag = array_pop($tags)){
 			$result.= $popTag;
 		}
-	
+		if($tailFlag){
+			$result.= $tail;
+		}
 		return $result;
 	}
 
